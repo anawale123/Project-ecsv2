@@ -1,0 +1,70 @@
+name: Automating image push to AWS ECR with OIDC
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      AWS_ACCOUNT_ID: 703844615264
+      AWS_REGION: eu-west-2
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::703844615264:role/githuboicd-deploy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION \
+          | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+      - name: Build image 
+        run: |
+          docker build --cache-from=type=gha --cache-to=type=gha,mode=max -f url-shortener/app/Dockerfile -t api_image:latest C:/Users/44736/Project-ecsv2/url-shortener/app
+
+      - name: Scan image 
+        uses: aquasecurity/trivy-action@v0.20.0
+        with:
+          image-ref: api_image:latest
+          severity: HIGH,CRITICAL
+          exit-code: 0
+          format: json
+          output: trivy.json
+          args: --ignorefile ./.trivyignore
+
+      - name: check trivy states
+        run: |
+          if grep -q '"Status": "unfixed"' trivy.json; then
+            echo "vulnerabilities still there"
+            exit 1
+          else
+            echo "all vulnerabilities fixed proceed"
+          fi
+
+      - name: Push image 
+        run: |
+          registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/api_image"
+          sha=$(git rev-parse --short HEAD)
+          primary_tag="${registry}:${sha}"
+
+          docker tag api:latest $primary_tag
+          docker push $primary_tag
+
+          current_branch=$(git rev-parse --abbrev-ref HEAD)
+          if [ "$current_branch" = "main" ]; then
+            latest_tag="${registry}:latest2"
+            docker tag api:latest $latest_tag
+            docker push $latest_tag
+          fi
