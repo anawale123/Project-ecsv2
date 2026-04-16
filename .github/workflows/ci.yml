@@ -19,8 +19,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Configure AWS via OIDC
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::703844615264:role/githuboicd-deploy
           aws-region: ${{ env.AWS_REGION }}
@@ -30,41 +33,114 @@ jobs:
           aws ecr get-login-password --region $AWS_REGION \
           | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      - name: Build image 
+      #API IMAGE
+      - name: Build api_image
         run: |
-          docker build --cache-from=type=gha --cache-to=type=gha,mode=max -f url-shortener/app/Dockerfile -t api_image:latest C:/Users/44736/Project-ecsv2/url-shortener/app
+          docker build --cache-from=type=gha --cache-to=type=gha,mode=max -f url-shortener/app/Dockerfile -t api_image:latest url-shortener/app/
 
-      - name: Scan image 
+      - name: Scan api_image
         uses: aquasecurity/trivy-action@v0.20.0
         with:
           image-ref: api_image:latest
           severity: HIGH,CRITICAL
           exit-code: 0
           format: json
-          output: trivy.json
+          output: trivy-api.json
           args: --ignorefile ./.trivyignore
 
-      - name: check trivy states
+      - name: Check trivy results api_image
         run: |
-          if grep -q '"Status": "unfixed"' trivy.json; then
+          if grep -q '"Status": "unfixed"' trivy-api.json; then
             echo "vulnerabilities still there"
             exit 1
           else
-            echo "all vulnerabilities fixed proceed"
+            echo "all vulnerabilities fixed, proceed"
           fi
 
-      - name: Push image 
+      - name: Push api_image
         run: |
           registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/api_image"
           sha=$(git rev-parse --short HEAD)
           primary_tag="${registry}:${sha}"
-
-          docker tag api:latest $primary_tag
+          docker tag api_image:latest $primary_tag
           docker push $primary_tag
-
           current_branch=$(git rev-parse --abbrev-ref HEAD)
           if [ "$current_branch" = "main" ]; then
-            latest_tag="${registry}:latest2"
-            docker tag api:latest $latest_tag
+            latest_tag="${registry}:latest"
+            docker tag api_image:latest $latest_tag
+            docker push $latest_tag
+          fi
+
+      #DASHBOARD IMAGE
+      - name: Build dashboard_image
+        run: |
+         docker build --cache-from=type=gha --cache-to=type=gha,mode=max -f url-shortener/services/dashboard/Dockerfile -t dashboard_image:latest url-shortener/services/dashboard/
+      - name: Scan dashboard_image
+        uses: aquasecurity/trivy-action@v0.20.0
+        with:
+          image-ref: dashboard_image:latest
+          severity: HIGH,CRITICAL
+          exit-code: 0
+          format: json
+          output: trivy-dashboard.json
+          args: --ignorefile ./.trivyignore
+
+      - name: Check trivy results dashboard_image
+        run: |
+          if grep -q '"Status": "unfixed"' trivy-dashboard.json; then
+            echo "vulnerabilities still there"
+            exit 1
+          else
+            echo "all vulnerabilities fixed, proceed"
+          fi
+
+      - name: Push dashboard_image
+        run: |
+          registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/dashboard_image"
+          sha=$(git rev-parse --short HEAD)
+          primary_tag="${registry}:${sha}"
+          docker tag dashboard_image:latest $primary_tag
+          docker push $primary_tag
+          current_branch=$(git rev-parse --abbrev-ref HEAD)
+          if [ "$current_branch" = "main" ]; then
+            latest_tag="${registry}:latest"
+            docker tag dashboard_image:latest $latest_tag
+            docker push $latest_tag
+          fi
+
+      #WORKER IMAGE
+      - name: Build worker_image
+        run: |
+          docker build --cache-from=type=gha --cache-to=type=gha,mode=max -f url-shortener/services/worker/Dockerfile -t worker_image:latest url-shortener/services/worker/
+      - name: Scan worker_image
+        uses: aquasecurity/trivy-action@v0.20.0
+        with:
+          image-ref: worker_image:latest
+          severity: HIGH,CRITICAL
+          exit-code: 0
+          format: json
+          output: trivy-worker.json
+          args: --ignorefile ./.trivyignore
+
+      - name: Check trivy results worker_image
+        run: |
+          if grep -q '"Status": "unfixed"' trivy-worker.json; then
+            echo "vulnerabilities still there"
+            exit 1
+          else
+            echo "all vulnerabilities fixed, proceed"
+          fi
+
+      - name: Push worker_image
+        run: |
+          registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/worker_image"
+          sha=$(git rev-parse --short HEAD)
+          primary_tag="${registry}:${sha}"
+          docker tag worker_image:latest $primary_tag
+          docker push $primary_tag
+          current_branch=$(git rev-parse --abbrev-ref HEAD)
+          if [ "$current_branch" = "main" ]; then
+            latest_tag="${registry}:latest"
+            docker tag worker_image:latest $latest_tag
             docker push $latest_tag
           fi
