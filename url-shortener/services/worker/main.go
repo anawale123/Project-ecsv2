@@ -51,7 +51,6 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Health check endpoint
 	go func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
@@ -68,7 +67,6 @@ func main() {
 		http.ListenAndServe(":"+port, mux)
 	}()
 
-	// Graceful shutdown
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
@@ -123,7 +121,6 @@ func pollSQS(ctx context.Context, queueURL string) {
 					log.Printf("Failed to process event: %v", err)
 					continue
 				}
-				// Delete message from queue after successful processing
 				log.Printf("Processed click event: %s", msg)
 			}
 			if len(messages) == 0 {
@@ -134,9 +131,6 @@ func pollSQS(ctx context.Context, queueURL string) {
 }
 
 func receiveSQSMessages(queueURL string) []string {
-	// Students implement with AWS SDK SQS ReceiveMessage
-	// Use long polling: WaitTimeSeconds = 20
-	// MaxNumberOfMessages = 10
 	return nil
 }
 
@@ -151,7 +145,6 @@ func processClickEvent(raw string) error {
 		clickedAt = time.Now().UTC()
 	}
 
-	// Insert raw click event
 	_, err = db.Exec(
 		`INSERT INTO click_events (short_code, ip_address, user_agent, referer, clicked_at)
 		 VALUES ($1, $2, $3, $4, $5)`,
@@ -161,7 +154,6 @@ func processClickEvent(raw string) error {
 		return err
 	}
 
-	// Update hourly aggregation
 	hour := clickedAt.Truncate(time.Hour)
 	_, err = db.Exec(
 		`INSERT INTO click_stats_hourly (short_code, hour, clicks, unique_ips)
@@ -185,8 +177,9 @@ func waitForDB() {
 	for i := 0; i < 30; i++ {
 		if err := db.Ping(); err == nil {
 			return
+		} else {
+			log.Printf("Waiting for database... (%d/30): %v", i+1, err)
 		}
-		log.Printf("Waiting for database... (%d/30)", i+1)
 		time.Sleep(time.Second)
 	}
 	log.Fatal("Database not ready after 30s")
