@@ -29,5 +29,6 @@ WORKDIR /worker
 USER nonroot:nonroot
 
 COPY --chown=nonroot:nonroot --from=builder /worker/worker /worker/worker
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 CMD ["/worker/worker"]
