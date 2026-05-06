@@ -1,4 +1,4 @@
-name: Deploy via CodeDeploy Dashboard
+name: Deploy via CodeDeploy api
 on:
   workflow_run:
     workflows: ["CODE TRIGGER with OIDC"]
@@ -26,18 +26,18 @@ jobs:
 
       - name: Trigger CodeDeploy - API
         run: |
-          CONTENT=$(jq -Rs . < .github/deploy/appsec-dashboard.yml)
+          CONTENT=$(jq -Rs . < .github/deploy/appsec-api.yml)
           REVISION=$(jq -n --argjson content "$CONTENT" \
             '{"revisionType":"AppSpecContent","appSpecContent":{"content":$content}}')
           aws deploy create-deployment \
-            --application-name dashboard-codedeploy-prod \
-            --deployment-group-name dashboard-blue-green-prod \
+            --application-name api-codedeploy-prod \
+            --deployment-group-name api-blue-green-prod \
             --region eu-west-2 \
             --revision "$REVISION"
 
       - name: Trigger CodeDeploy - Dashboard
         run: |
-          CONTENT=$(jq -Rs . < .github/deploy/appsec-dashboard.yml)
+          CONTENT=$(jq -Rs . < .github/deploy/appsec.yml)
           REVISION=$(jq -n --argjson content "$CONTENT" \
             '{"revisionType":"AppSpecContent","appSpecContent":{"content":$content}}')
           aws deploy create-deployment \

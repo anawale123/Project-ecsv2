@@ -1,0 +1,9 @@
+version: 1
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: "arn:aws:ecs:eu-west-2:703844615264:task-definition/dashboard-service-ecs-prod:1"
+        LoadBalancerInfo:
+          ContainerName: "dashboard"
+          ContainerPort: 8081
