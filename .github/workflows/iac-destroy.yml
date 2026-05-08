@@ -1,0 +1,73 @@
+name: Automating terraform lint and apply
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      AWS_ACCOUNT_ID: 703844615264
+      WORK_DIR: terraform/infra/envs/prod
+      ENVIRONMENT: prod
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::703844615264:role/githuboicd-deploy
+          aws-region: eu-west-2
+
+      - name: terraform lint download
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.52.0
+
+      - name: terraform lint
+        run: |
+          cd "$WORK_DIR"
+          tflint --init
+          tflint
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: terraform destroy (safe)
+        run: |
+          set -euo pipefail
+          cd "$WORK_DIR"
+
+          if [ "${ENVIRONMENT}" = "prod" ]; then
+            echo "Destroy blocked for production"
+            exit 1
+          fi
+
+          echo "Type DESTROY to continue or EXIT to cancel:"
+          read choice
+
+          if [ "$choice" = "DESTROY" ]; then
+            echo "Type I-UNDERSTAND to confirm:"
+            read confirm
+            if [ "$confirm" = "I-UNDERSTAND" ]; then
+              terraform destroy --auto-approve
+            else
+              echo "Confirmation failed"
+              exit 1
+            fi
+          elif [ "$choice" = "EXIT" ]; then
+            echo "Exiting"
+            exit 0
+          else
+            echo "Invalid option"
+            exit 1
+          fi
