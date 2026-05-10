@@ -8,7 +8,6 @@ on:
       are_you_sure:
         description: "Are you sure? Type YES to proceed"
         required: true
-
 jobs:
   destroy:
     runs-on: ubuntu-latest
@@ -48,7 +47,12 @@ jobs:
       - name: Terraform init
         run: |
           cd "$WORK_DIR"
-          terraform init
+          terraform init \
+            -backend-config="bucket=terraform-state-shortener" \
+            -backend-config="key=prod/terraform.tfstate" \
+            -backend-config="region=eu-west-2" \
+            -backend-config="dynamodb_table=terraform-state-locks" \
+            -backend-config="encrypt=true"
 
       - name: Terraform destroy
         run: |
