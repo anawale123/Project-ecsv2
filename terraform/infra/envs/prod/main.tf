@@ -1,3 +1,8 @@
+terraform {
+  required_version = ">= 1.0"
+}
+
+
 module "networking" {
   source      = "../../../modules/networking"
   environment = "prod"
