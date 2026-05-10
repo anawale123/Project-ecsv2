@@ -1,3 +1,3 @@
-variable " alb_arn" {
+variable "alb_arn" {
     type = string 
 }
