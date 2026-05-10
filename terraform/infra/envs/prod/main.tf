@@ -65,7 +65,7 @@ module "codedeploy" {
     green_api_tg        = module.alb.green_api_tg
     blue_dashboard_tg   = module.alb.blue_dashboard_tg
     green_dashboard_tg  = module.alb.green_dashboard_tg
-    
+
 }
 
 module "ats" {
@@ -100,4 +100,11 @@ module "redis" {
   vpc_id        = module.networking.vpc_id
   private_redis = module.networking.private_redis
   redis_sg      = module.networking.redis_sg
+}
+
+module "waf" {
+  source        = "../../../modules/waf"
+  environment   = "prod"
+  alb_arn       =  module.alb.alb_arn
+
 }
