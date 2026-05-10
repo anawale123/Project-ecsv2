@@ -36,11 +36,6 @@ jobs:
           tflint --init
           tflint
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.6.6
-
       - name: terraform apply
         run: |
           cd $WORK_DIR
