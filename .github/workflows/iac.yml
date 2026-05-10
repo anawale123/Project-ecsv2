@@ -1,16 +1,12 @@
 name: Automating terraform lint and apply
-
 on:
   workflow_dispatch:
-
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-
     permissions:
       id-token: write
       contents: read
-
     env:
       AWS_ACCOUNT_ID: 703844615264
       WORK_DIR: terraform/infra/envs/prod
@@ -25,24 +21,33 @@ jobs:
           role-to-assume: arn:aws:iam::703844615264:role/githuboicd-deploy
           aws-region: eu-west-2
 
-      - name: terraform lint download
+      - name: Install tflint
         uses: terraform-linters/setup-tflint@v4
         with:
           tflint_version: v0.52.0
-          
+
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.6
 
-      - name: terraform lint
+      - name: Terraform lint
         run: |
           cd $WORK_DIR
           tflint --init
           tflint
 
-      - name: terraform apply
+      - name: Terraform init
         run: |
           cd $WORK_DIR
-          terraform init
+          terraform init \
+            -backend-config="bucket=terraform-state-shortener" \
+            -backend-config="key=prod/terraform.tfstate" \
+            -backend-config="region=eu-west-2" \
+            -backend-config="dynamodb_table=terraform-state-locks" \
+            -backend-config="encrypt=true"
+
+      - name: Terraform apply
+        run: |
+          cd $WORK_DIR
           terraform apply --auto-approve
