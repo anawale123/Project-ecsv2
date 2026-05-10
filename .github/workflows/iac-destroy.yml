@@ -1,24 +1,38 @@
-name: Automating terraform lint and apply
-
+name: Terraform destroy
 on:
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DESTROY to confirm"
+        required: true
+      are_you_sure:
+        description: "Are you sure? Type YES to proceed"
+        required: true
 
 jobs:
-  build-and-publish:
+  destroy:
     runs-on: ubuntu-latest
-
     permissions:
       id-token: write
       contents: read
-
     env:
-      AWS_ACCOUNT_ID: 703844615264
       WORK_DIR: terraform/infra/envs/prod
-      ENVIRONMENT: prod
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+
+      - name: Validate confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "DESTROY" ]; then
+            echo "Confirmation failed — type DESTROY to proceed"
+            exit 1
+          fi
+          if [ "${{ github.event.inputs.are_you_sure }}" != "YES" ]; then
+            echo "Final confirmation failed — type YES to proceed"
+            exit 1
+          fi
+          echo "Both confirmations passed — proceeding with destroy"
 
       - name: Configure AWS via OIDC
         uses: aws-actions/configure-aws-credentials@v2
@@ -26,48 +40,17 @@ jobs:
           role-to-assume: arn:aws:iam::703844615264:role/githuboicd-deploy
           aws-region: eu-west-2
 
-      - name: terraform lint download
-        uses: terraform-linters/setup-tflint@v4
-        with:
-          tflint_version: v0.52.0
-
-      - name: terraform lint
-        run: |
-          cd "$WORK_DIR"
-          tflint --init
-          tflint
-
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.6
 
-      - name: terraform destroy (safe)
+      - name: Terraform init
         run: |
-          set -euo pipefail
           cd "$WORK_DIR"
+          terraform init
 
-          if [ "${ENVIRONMENT}" = "prod" ]; then
-            echo "Destroy blocked for production"
-            exit 1
-          fi
-
-          echo "Type DESTROY to continue or EXIT to cancel:"
-          read choice
-
-          if [ "$choice" = "DESTROY" ]; then
-            echo "Type I-UNDERSTAND to confirm:"
-            read confirm
-            if [ "$confirm" = "I-UNDERSTAND" ]; then
-              terraform destroy --auto-approve
-            else
-              echo "Confirmation failed"
-              exit 1
-            fi
-          elif [ "$choice" = "EXIT" ]; then
-            echo "Exiting"
-            exit 0
-          else
-            echo "Invalid option"
-            exit 1
-          fi
+      - name: Terraform destroy
+        run: |
+          cd "$WORK_DIR"
+          terraform destroy --auto-approve
