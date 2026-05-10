@@ -10,7 +10,6 @@ jobs:
     env:
       AWS_ACCOUNT_ID: 703844615264
       WORK_DIR: terraform/infra/envs/prod
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -46,6 +45,43 @@ jobs:
             -backend-config="region=eu-west-2" \
             -backend-config="dynamodb_table=terraform-state-locks" \
             -backend-config="encrypt=true"
+
+      - name: Terraform import existing resources
+        run: |
+          cd $WORK_DIR
+
+          # Helper function - only imports if not already in state
+          import_if_missing() {
+            local resource=$1
+            local id=$2
+            if ! terraform state show "$resource" > /dev/null 2>&1; then
+              echo "Importing $resource..."
+              terraform import "$resource" "$id" || true
+            else
+              echo "Already in state: $resource"
+            fi
+          }
+
+          import_if_missing module.iam.aws_iam_role.code_deploy_service_role codedeployservicerole
+          import_if_missing module.iam.aws_iam_role.ecs_execution_role ecs-execution-role-prod
+          import_if_missing module.iam.aws_iam_role.worker_task_role ecs-task-role-prod
+          import_if_missing module.iam.aws_iam_policy.ecs_pull arn:aws:iam::703844615264:policy/ecs-pull-policy-prod
+          import_if_missing module.codedeploy.aws_codedeploy_app.api_codedeploy api-codedeploy-prod
+          import_if_missing module.codedeploy.aws_codedeploy_app.dashboard_codedeploy dashboard-codedeploy-prod
+          import_if_missing module.cloudwatch.aws_cloudwatch_log_group.ecs_logs /ecs/app/prod
+          import_if_missing module.s3.aws_s3_bucket.alb_logs alb-access-logs-prod-703844615264
+          import_if_missing module.alb.aws_lb_target_group.blue_dashboard_tg arn:aws:elasticloadbalancing:eu-west-2:703844615264:targetgroup/dashboard-tg-prod/8be4a8bce0e13637
+          import_if_missing module.alb.aws_lb_target_group.blue_api_tg arn:aws:elasticloadbalancing:eu-west-2:703844615264:targetgroup/api-tg-prod/78a37e17dd518373
+          import_if_missing module.alb.aws_lb_target_group.green_dashboard_tg arn:aws:elasticloadbalancing:eu-west-2:703844615264:targetgroup/green-dashboard-tg-prod/9debc53e1af20a17
+          import_if_missing module.alb.aws_lb_target_group.green_api_tg arn:aws:elasticloadbalancing:eu-west-2:703844615264:targetgroup/green-api-tg-prod/453ae64e1bb879bf
+          import_if_missing module.cloudwatch.aws_cloudwatch_metric_alarm.sqs_queue_depth sqs-queue-depth-prod
+          import_if_missing module.cloudwatch.aws_cloudwatch_metric_alarm.dlq_depth dlq-depth-prod
+
+          # WAF needs ID lookup first
+          WAF_ID=$(aws wafv2 list-web-acls --scope REGIONAL --region eu-west-2 --query 'WebACLs[?Name==`waf`].Id' --output text)
+          if [ -n "$WAF_ID" ]; then
+            import_if_missing module.waf.aws_wafv2_web_acl.waf "eu-west-2/${WAF_ID}/waf"
+          fi
 
       - name: Terraform apply
         run: |
