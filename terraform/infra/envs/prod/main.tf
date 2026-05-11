@@ -14,17 +14,17 @@ terraform {
 }
 module "networking" {
   source      = "../../../modules/networking"
-  environment = "prod"
+  environment = "production"
 }
 
 module "iam" {
   source      = "../../../modules/iam"
-  environment = "prod"
+  environment = "production"
 }
 
 module "cloudwatch" {
   source                 = "../../../modules/cloudwatch"
-  environment            = "prod"
+  environment            = "production"
   cluster_name           = module.ecs.cluster_name
   alb_arn_suffix         = module.alb.alb_arn_suffix
   api_service_name       = module.ecs.api_service_name
@@ -37,14 +37,14 @@ module "cloudwatch" {
 
 module "sqs" {
   source      = "../../../modules/sqs"
-  environment = "prod"
+  environment = "production"
 }
 
 
 
 module "alb" {
   source         = "../../../modules/alb"
-  environment    = "prod"
+  environment    = "production"
   vpc_id         = module.networking.vpc_id
   public_subnets = module.networking.public_subnets
   alb_sg         = module.networking.alb_sg
@@ -53,7 +53,7 @@ module "alb" {
 
 module "ecs" {
   source            = "../../../modules/ecs"
-  environment       = "prod"
+  environment       = "production"
   vpc_id            = module.networking.vpc_id
   alb_arn           = module.alb.alb_arn
   private_subnet    = module.networking.private_subnet
@@ -69,7 +69,7 @@ module "ecs" {
 
 module "codedeploy" {
     source            = "../../../modules/codedeploy"
-    environment   = "prod"
+    environment   = "production"
     codedeploy_role_arn = module.iam.codedeploy_role_arn
     cluster_name        = module.ecs.cluster_name
     service_name_api    = module.ecs.api_service_name
@@ -84,7 +84,7 @@ module "codedeploy" {
 
 module "ats" {
     source            = "../../../modules/autoscaling"
-    environment   = "prod"
+    environment   = "production"
     cluster        = module.ecs.cluster_name 
     service        = module.ecs.api_service_name 
 
@@ -94,7 +94,7 @@ module "ats" {
 
 module "rds" {
   source        = "../../../modules/rds"
-  environment   = "prod"
+  environment   = "production"
   vpc_id        = module.networking.vpc_id
   private_rds   = module.networking.private_rds
   rds_sg        = module.networking.rds_sg
@@ -103,14 +103,14 @@ module "rds" {
 
 module "s3" {
   source        = "../../../modules/s3"
-  environment   = "prod"
+  environment   = "production"
 
 
 }
 
 module "redis" {
   source        = "../../../modules/redis"
-  environment   = "prod"
+  environment   = "production"
   vpc_id        = module.networking.vpc_id
   private_redis = module.networking.private_redis
   redis_sg      = module.networking.redis_sg
@@ -118,7 +118,7 @@ module "redis" {
 
 module "waf" {
   source        = "../../../modules/waf"
-  environment   = "prod"
+  environment   = "production"
   alb_arn       =  module.alb.alb_arn
 
 }
