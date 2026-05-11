@@ -30,8 +30,8 @@ jobs:
           REVISION=$(jq -n --argjson content "$CONTENT" \
             '{"revisionType":"AppSpecContent","appSpecContent":{"content":$content}}')
           aws deploy create-deployment \
-            --application-name api-codedeploy-prod \
-            --deployment-group-name api-blue-green-prod \
+            --application-name api-codedeploy-production \
+            --deployment-group-name api-blue-green-production \
             --region eu-west-2 \
             --revision "$REVISION"
 
@@ -41,7 +41,7 @@ jobs:
           REVISION=$(jq -n --argjson content "$CONTENT" \
             '{"revisionType":"AppSpecContent","appSpecContent":{"content":$content}}')
           aws deploy create-deployment \
-            --application-name dashboard-codedeploy-prod \
-            --deployment-group-name dashboard-blue-green-prod \
+            --application-name dashboard-codedeploy-production \
+            --deployment-group-name dashboard-blue-green-production \
             --region eu-west-2 \
             --revision "$REVISION"
