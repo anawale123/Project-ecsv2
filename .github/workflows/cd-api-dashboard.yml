@@ -37,7 +37,7 @@ jobs:
 
       - name: Trigger CodeDeploy - Dashboard
         run: |
-          CONTENT=$(jq -Rs . < .github/deploy/appsec.yml)
+          CONTENT=$(jq -Rs . < .github/deploy/appsec-dashboard.yml)
           REVISION=$(jq -n --argjson content "$CONTENT" \
             '{"revisionType":"AppSpecContent","appSpecContent":{"content":$content}}')
           aws deploy create-deployment \
