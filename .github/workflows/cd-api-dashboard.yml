@@ -1,4 +1,4 @@
-name: Deploy via CodeDeploy api
+name: Deploy via CodeDeploy api & dashboard
 on:
   workflow_run:
     workflows: ["CODE TRIGGER with OIDC"]
