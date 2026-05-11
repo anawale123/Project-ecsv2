@@ -46,7 +46,7 @@ jobs:
             -backend-config="dynamodb_table=terraform-state-locks" \
             -backend-config="encrypt=true"
 
-      -
+      
       - name: Terraform apply
         run: |
           cd $WORK_DIR
