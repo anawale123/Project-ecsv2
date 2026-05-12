@@ -40,8 +40,8 @@ resource "aws_ecs_task_definition" "worker_task_def" {
 
       secrets = [
         {
-          name      = "DATABASE_URL"
-          valueFrom = "arn:aws:secretsmanager:eu-west-2:703844615264:secret:DB_URL-CrV7Io"
+          name      = "DATABASE_URL",
+          valueFrom = "arn:aws:secretsmanager:eu-west-2:703844615264:secret:DB_URL-CrV7Io:DATABASE_URL::"
         }
       ]
 
