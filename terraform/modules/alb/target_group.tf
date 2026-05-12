@@ -1,6 +1,6 @@
 # dashboard target group blue 
 resource "aws_lb_target_group" "blue_dashboard_tg" {
-  name        = "dashboard-tg-${var.environment}"
+  name        = "dash-blue"
   port        = 8081
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -24,7 +24,7 @@ resource "aws_lb_target_group" "blue_dashboard_tg" {
 
 # api target group blue
 resource "aws_lb_target_group" "blue_api_tg" {
-  name        = "api-tg-${var.environment}"
+  name        = "api-blue"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -48,7 +48,7 @@ resource "aws_lb_target_group" "blue_api_tg" {
 
 # green target group dashboard
 resource "aws_lb_target_group" "green_dashboard_tg" {
-  name        = "green-dashboard-tg-${var.environment}"
+  name        = "green-dash"
   port        = 8081
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -72,7 +72,7 @@ resource "aws_lb_target_group" "green_dashboard_tg" {
 
 # api target  blue
 resource "aws_lb_target_group" "green_api_tg" {
-  name        = "green-api-tg-${var.environment}"
+  name        = "green-api"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
