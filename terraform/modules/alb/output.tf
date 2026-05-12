@@ -7,6 +7,11 @@ output "alb_arn" {
 
 output "blue_api_tg" {
   description = "  Main app target group"
+  value       = aws_lb_target_group.blue_api_tg.arn
+}
+
+output "blue_api_codedeploy" {
+  description = "  Main app target group"
   value       = aws_lb_target_group.blue_api_tg.name
 }
 
@@ -23,8 +28,14 @@ output "alb_listener" {
 }
 output "blue_dashboard_tg" {
   description = "  Main app target group"
+  value       = aws_lb_target_group.blue_dashboard_tg.arn
+}
+
+output "blue_codedeploy_dash" {
+  description = "  Main app target group"
   value       = aws_lb_target_group.blue_dashboard_tg.name
 }
+
 
 output "green_dashboard_tg" {
   description = " green target group for code deploy" 
