@@ -75,9 +75,9 @@ module "codedeploy" {
     service_name_api    = module.ecs.api_service_name
     service_name_dashboard = module.ecs.dashboard_service_name
     alb_listener        = module.alb.alb_listener
-    blue_api_tg         = module.alb.blue_api_tg
+    blue_api_codedeploy  = module.alb.blue_api_codedeploy
     green_api_tg        = module.alb.green_api_tg
-    blue_dashboard_tg   = module.alb.blue_dashboard_tg
+    blue_codedeploy_dash   = module.alb.blue_codedeploy_dash
     green_dashboard_tg  = module.alb.green_dashboard_tg
 
 }
