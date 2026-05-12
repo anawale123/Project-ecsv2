@@ -41,7 +41,7 @@ resource "aws_lb_listener" "https" {
   }
 }
 
-# API listener rule
+# API rule (shorten + stats)
 resource "aws_lb_listener_rule" "api" {
   listener_arn = aws_lb_listener.https.arn
   priority     = 20
@@ -64,7 +64,7 @@ resource "aws_lb_listener_rule" "api" {
   }
 }
 
-# Dashboard listener rule
+# Dashboard rule
 resource "aws_lb_listener_rule" "dashboard" {
   listener_arn = aws_lb_listener.https.arn
   priority     = 21
@@ -80,9 +80,31 @@ resource "aws_lb_listener_rule" "dashboard" {
     }
   }
 
-
   tags = {
     Name        = "dashboard-rule"
+    Environment = var.environment
+    Project     = "url-shortener"
+  }
+}
+
+# Short URL wildcard rule (CRITICAL FIX)
+resource "aws_lb_listener_rule" "short_redirects" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 22
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.blue_api_tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/*"]
+    }
+  }
+
+  tags = {
+    Name        = "short-redirect-rule"
     Environment = var.environment
     Project     = "url-shortener"
   }
