@@ -104,13 +104,18 @@ resource "aws_security_group" "vpc_endpoints_sg" {
     cidr_blocks = [var.vpc_cidr]
   }
 
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   tags = {
     Name        = "vpc_endpoint_sg"
     Environment = var.environment
   }
 }
-
-// dashboard egress
 
 resource "aws_security_group_rule" "dashboard_to_rds" {
   type                     = "egress"
@@ -139,8 +144,6 @@ resource "aws_security_group_rule" "dashboard_to_internet_443" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-// api egress
-
 resource "aws_security_group_rule" "api_to_rds" {
   type                     = "egress"
   from_port                = 5432
@@ -168,7 +171,14 @@ resource "aws_security_group_rule" "api_to_vpc_endpoints" {
   source_security_group_id = aws_security_group.vpc_endpoints_sg.id
 }
 
-// worker egress
+resource "aws_security_group_rule" "api_to_internet_443" {
+  type              = "egress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.api_sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
 
 resource "aws_security_group_rule" "worker_to_rds" {
   type                     = "egress"
@@ -177,6 +187,15 @@ resource "aws_security_group_rule" "worker_to_rds" {
   protocol                 = "tcp"
   security_group_id        = aws_security_group.worker_sg.id
   source_security_group_id = aws_security_group.rds_sg.id
+}
+
+resource "aws_security_group_rule" "worker_to_redis" {
+  type                     = "egress"
+  from_port                = 6379
+  to_port                  = 6379
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.worker_sg.id
+  source_security_group_id = aws_security_group.redis_sg.id
 }
 
 resource "aws_security_group_rule" "worker_to_vpc_endpoints" {
@@ -188,7 +207,14 @@ resource "aws_security_group_rule" "worker_to_vpc_endpoints" {
   source_security_group_id = aws_security_group.vpc_endpoints_sg.id
 }
 
-// rds ingress
+resource "aws_security_group_rule" "worker_to_internet_443" {
+  type              = "egress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  security_group_id = aws_security_group.worker_sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
 
 resource "aws_security_group_rule" "rds_from_api" {
   type                     = "ingress"
@@ -217,8 +243,6 @@ resource "aws_security_group_rule" "rds_from_dashboard" {
   source_security_group_id = aws_security_group.dashboard_sg.id
 }
 
-// redis ingress
-
 resource "aws_security_group_rule" "redis_from_api" {
   type                     = "ingress"
   from_port                = 6379
@@ -226,4 +250,13 @@ resource "aws_security_group_rule" "redis_from_api" {
   protocol                 = "tcp"
   security_group_id        = aws_security_group.redis_sg.id
   source_security_group_id = aws_security_group.api_sg.id
+}
+
+resource "aws_security_group_rule" "redis_from_worker" {
+  type                     = "ingress"
+  from_port                = 6379
+  to_port                  = 6379
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.redis_sg.id
+  source_security_group_id = aws_security_group.worker_sg.id
 }
