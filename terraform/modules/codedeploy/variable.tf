@@ -30,7 +30,7 @@ variable "alb_listener" {
 
 
 
-variable "blue_api_tg" {
+variable "blue_api_codedeploy" {
     type = string 
     description = " target group variable of blue deployment target group" 
 }
@@ -42,7 +42,7 @@ variable "green_api_tg" {
 }
 
 
-variable "blue_dashboard_tg" {
+variable "blue_codedeploy_dash" {
     type = string 
     description = " target group variable of blue deployment target group" 
 }
