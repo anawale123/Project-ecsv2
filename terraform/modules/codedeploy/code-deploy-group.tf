@@ -33,7 +33,7 @@ resource "aws_codedeploy_deployment_group" "api_codedeploy" {
       }
 
       target_group {
-        name = var.blue_api_tg
+        name = var.blue_api_codedeploy
       }
 
       target_group {
@@ -78,7 +78,7 @@ resource "aws_codedeploy_deployment_group" "dashboard_codedeploy" {
       }
 
       target_group {
-        name = var.blue_dashboard_tg
+        name = var.blue_codedeploy_dash
       }
 
       target_group {
