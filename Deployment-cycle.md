@@ -154,47 +154,67 @@ k6 load testing was performed against the API ECS service to evaluate request la
 
 #### k6 Test Results
 
-| Test | Scenario | VUs | Avg Latency | p95 Latency | Error Rate | CPU Peak |
-|------|----------|-----|-------------|-------------|------------|----------|
-| Baseline | 50 VUs for 3 minutes | 50 | 20ms | 33ms | 0% | <1% |
-| Ramp Test | Ramp from 250 to 800 VUs | 800 | 60ms | 204ms | 0.03% | 63% |
-| Stage Test | Incremental stages up to 800 VUs | 800 | 162ms | 933ms | 0.01% | 99.7% |
+Second Load Test Analysis
 
-![k6 Load Test 1](assets/load-test1.png)
+k6 Test Results
+[IMAGE: assets/k6loadtest2.png]
 
-![k6 Load Test 2](assets/second-loadtest.png)
+Test    Scenario    VUs Avg Latency p95 Latency Error Rate  CPU Peak
+Baseline    50 VUs for 3 minutes    50  20ms    33ms    0%  <1%
+Ramp Test   Ramp from 250 → 800 VUs 800 60ms    204ms   0.03%   63%
 
-### Infrastructure Analysis
 
-| Component | Metric | Result | Verdict |
-|-----------|--------|--------|---------|
-| RDS CPU | Utilisation | <9% | Database was not CPU constrained |
-| RDS Connections | Active Connections | 5 | No connection exhaustion observed |
-| RDS Latency | Read/Write Latency | <18ms | Database latency remained healthy |
-| ECS CPU | Utilisation at Failure | 41% | Additional compute headroom remained |
-| ECS Memory | Utilisation | 8.15% | Memory pressure was insignificant |
-| ALB Requests | Peak Request Count | 18.87K | High concurrency traffic sustained |
+Timestamp Identification
+A precise timestamp was captured at the moment the first 502 error occurred.
+This timestamp was used to:
 
-![ECS API Metrics](assets/ecs-api.png)
+- Locate the exact ALB access log file
+- Correlate ALB logs with ECS CPU metrics
+- Identify the exact moment the bottleneck appeared
 
-![RDS Metrics](assets/rds-metrics.png)
+[IMAGE: assets/errorlog.png]
 
-### ALB Access Log Findings
 
-| Field | Value | Description |
-|-------|-------|-------------|
-| `elb-status-code` | `502` | ALB returned Bad Gateway |
-| `target-status-code` | `-` | ECS task returned no HTTP response |
-| `response-processing-time` | `-1` | ALB received no response from target |
-| `target-processing-time` | `0.161` | ECS task dropped connection after 161ms |
-| `request` | `POST /shorten` | Endpoint affected under load |
-| `target` | `10.0.4.164:8080` | Single ECS task became saturated |
+ALB Access Log Findings
+[IMAGE: assets/accesslog.png]
 
-![ALB Access Log](assets/alb-accesslog.png)
+Field   Value   Description
+elb-status-code 502 ALB returned Bad Gateway
+target-status-code  None    ECS task returned no HTTP response
+response-processing-time    -1  ALB received no response from ECS target
+target  10.0.4.164:8080 Single ECS task became saturated
 
-### Diagnosis
 
-Results from load testing indicated that the primary bottleneck existed in the application layer rather than the infrastructure layer. The ECS API task became saturated under high sustained concurrency, causing upstream connection drops that resulted in ALB `502` responses. RDS performance, memory usage, and infrastructure capacity remained within healthy operating thresholds.
+Infrastructure Analysis
+
+RDS Metrics
+[IMAGE: assets/rds-cloudwatch.png]
+
+ECS Metrics
+[IMAGE: assets/ecs_cpu.png]
+[IMAGE: assets/ecs-dashboardpng.png]
+
+Component   Metric  Result  Verdict
+RDS CPU Utilisation <10%    Database not CPU constrained
+RDS Connections Active Connections  ~5  No connection exhaustion
+RDS Latency Read/Write Latency  <20ms   Latency remained healthy
+ECS CPU Utilisation at Failure  ~97%    ECS task became CPU saturated
+ECS Memory  Utilisation ~8% No memory pressure
+ALB Requests    Peak Request Count  ~18.8K  High concurrency sustained
+
+
+Diagnosis
+Load test results show the primary bottleneck was the ECS API service.
+
+The first 502 error timestamp matched the moment ECS CPU spiked to ~95–97%.
+
+ALB access logs confirmed the ECS task accepted connections but failed to return responses.
+
+RDS metrics remained healthy, ruling out the database as a bottleneck.
+
+Memory usage was low, ruling out memory pressure.
+
+Only the ECS API CPU showed critical saturation.
 
 ### Autoscaling Decisions
 
