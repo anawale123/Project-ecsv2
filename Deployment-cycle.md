@@ -228,17 +228,12 @@ at current time 502 appeared marked it against the the cpu metrics which was at 
 
 ### Diagnosis
 
-Load test results show the primary bottleneck was the ECS API service.
+- ECS CPU reached 97% at 16:42:00, one minute before the first 502 appeared
+- ALB access logs confirmed the ECS task accepted connections but never responded
+- RDS CPU remained below 10%, ruling out the database as a bottleneck
+- Memory remained at ~8%, ruling out memory pressure
+- Single ECS task with no autoscaling absorbed all 800 VUs alone
 
-The first 502 error timestamp matched the moment ECS CPU spiked to ~95–97%.
-
-ALB access logs confirmed the ECS task accepted connections but failed to return responses.
-
-RDS metrics remained healthy, ruling out the database as a bottleneck.
-
-Memory usage was low, ruling out memory pressure.
-
-Only the ECS API CPU showed critical saturation.
 
 ### Autoscaling Decisions
 
