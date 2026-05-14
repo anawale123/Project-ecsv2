@@ -154,45 +154,37 @@ k6 load testing was performed against the API ECS service to evaluate request la
 
 #### k6 Test Results
 
-Second Load Test Analysis
-
-k6 Test Results
-[IMAGE: assets/k6loadtest2.png]
-
-Test    Scenario    VUs Avg Latency p95 Latency Error Rate  CPU Peak
-Baseline    50 VUs for 3 minutes    50  20ms    33ms    0%  <1%
-Ramp Test   Ramp from 250 → 800 VUs 800 60ms    204ms   0.03%   63%
+| Test | Scenario | VUs | Avg Latency | p95 Latency | Error Rate | CPU Peak |
+|------|----------|-----|-------------|-------------|------------|----------|
+| Baseline | 50 VUs for 3 minutes | 50 | 20ms | 33ms | 0% | <1% |
+| Ramp Test | Ramp from 250 to 800 VUs | 800 | 60ms | 204ms | 0.03% | 63% |
 
 
-Timestamp Identification
-A precise timestamp was captured at the moment the first 502 error occurred.
+![k6 Load Test 1](assets/load-test1.png)
+
+![k6 Load Test 2](assets/k6loadtest2.png)
+
+##### Timestamp Analysis
+
+The first 502 error was captured in the k6 console at **16:43:06 UTC**. 
 This timestamp was used to:
 
-- Locate the exact ALB access log file
-- Correlate ALB logs with ECS CPU metrics
-- Identify the exact moment the bottleneck appeared
+- Locate the exact ALB access log file in S3
+- Correlate the failure against ECS CPU CloudWatch metrics
+- Confirm the exact moment the bottleneck appeared
 
-[IMAGE: assets/errorlog.png]
+![k6 Error Log — First 502](assets/errorlog.png)
 
+| Event | Time (UTC) | Detail |
+|-------|------------|--------|
+| Test started | 16:39:00 | 0 VUs |
+| CPU reached 97% | 16:42:00 | ~400 VUs — container saturated |
+| First 502 error | 16:43:06 | 234 seconds into test |
+| Breaking point | ~500 VUs | 62.5% of max load |
+| CPU peak | 16:45:00 | 98.2% at 700–800 VUs |
+| Test ended | 16:46:00 | Load ramp-down complete |
 
-ALB Access Log Findings
-[IMAGE: assets/accesslog.png]
-
-Field   Value   Description
-elb-status-code 502 ALB returned Bad Gateway
-target-status-code  None    ECS task returned no HTTP response
-response-processing-time    -1  ALB received no response from ECS target
-target  10.0.4.164:8080 Single ECS task became saturated
-
-
-Infrastructure Analysis
-
-RDS Metrics
-[IMAGE: assets/rds-cloudwatch.png]
-
-ECS Metrics
-[IMAGE: assets/ecs_cpu.png]
-[IMAGE: assets/ecs-dashboardpng.png]
+### Infrastructure Analysis
 
 Component   Metric  Result  Verdict
 RDS CPU Utilisation <10%    Database not CPU constrained
@@ -202,8 +194,33 @@ ECS CPU Utilisation at Failure  ~97%    ECS task became CPU saturated
 ECS Memory  Utilisation ~8% No memory pressure
 ALB Requests    Peak Request Count  ~18.8K  High concurrency sustained
 
+![ECS API Metrics](assets/ecs-dashboardpng.png)
 
-Diagnosis
+![RDS Metrics](assets/rds-cloudwatch.png)
+
+#### timestamp cross-reference  
+at current time 502 appeared marked it against the the cpu metrics which was at 95%, at this rate is where bottleneck appeared and latency was shown. 
+![ECS API Metrics CPU ](assets/ecs_cpu.png)
+
+
+
+### ALB Access Log Findings
+ALB access log during timestap error occured, gives more insight than cloudwatch where I'm able to see whether where the root cause of botttleneck and narrows down the issue. this being the first step usually when diagnosing latency issue.
+
+| Field | Value | Description |
+|-------|-------|-------------|
+| `elb-status-code` | `502` | ALB returned Bad Gateway |
+| `target-status-code` | `none` | ECS task returned no HTTP response |
+| `response-processing-time` | `-1` | ALB received no response from target |
+| `target-processing-time` | `0.161` | ECS task dropped connection after 161ms |
+| `request` | `POST /shorten` | Endpoint affected under load |
+| `target` | `10.0.4.164:8080` | Single ECS task became saturated |
+
+![ALB Access Log](assets/accesslog.png)
+
+
+### Diagnosis
+
 Load test results show the primary bottleneck was the ECS API service.
 
 The first 502 error timestamp matched the moment ECS CPU spiked to ~95–97%.
@@ -222,9 +239,9 @@ Autoscaling thresholds were configured using observed k6 behaviour rather than e
 
 | Threshold | Action | Justification |
 |-----------|--------|---------------|
-| 25% CPU | CloudWatch alarm trigger | Early warning before degradation |
-| 30% CPU | ECS scale-out trigger | Increase capacity before saturation |
-| 35% CPU | Scale-in evaluation threshold | Prevent aggressive scaling oscillation |
+| 75% CPU | CloudWatch alarm trigger | Early warning before degradation |
+| 80% CPU | ECS scale-out trigger | Increase capacity before saturation |
+| 85% CPU | Scale-in evaluation threshold | Prevent aggressive scaling oscillation |
 
 Autoscaling was only applied to the API service, enabling it to scale horizontally and handle high concurrency levels. The API service handles URL shortening, database interaction, request routing, and business logic execution. The worker and dashboard services maintained predictable traffic patterns and did not require scaling.
 
