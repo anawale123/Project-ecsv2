@@ -192,7 +192,7 @@ The ALB access log was retrieved using the timestamp captured when the first
 whether the failure stemed from the ALB or the ECS target. This is the first 
 step taken when diagnosing any latency or 502 errors.
 
-| Field | Value | Description |
+| status | Value | Description |
 |-------|-------|-------------|
 | `elb-status-code` | `502` | ALB returned Bad Gateway |
 | `target-status-code` | `none` | ECS task returned no HTTP response |
