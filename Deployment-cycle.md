@@ -159,9 +159,10 @@ k6 load testing was performed against the API ECS service to evaluate request la
 | Baseline | 50 VUs for 3 minutes | 50 | 20ms | 33ms | 0% | <1% |
 | Ramp Test | Ramp from 250 to 800 VUs | 800 | 60ms | 204ms | 0.03% | 63% |
 
-
+##### k6 first load test
 ![k6 Load Test 1](assets/load-test1.png)
 
+##### k6 second load test
 ![k6 Load Test 2](assets/k6loadtest2.png)
 
 ##### Timestamp Analysis
@@ -184,28 +185,12 @@ This timestamp was used to:
 | CPU peak | 16:45:00 | 98.2% at 700–800 VUs |
 | Test ended | 16:46:00 | Load ramp-down complete |
 
-### Infrastructure Analysis
-
-Component   Metric  Result  Verdict
-RDS CPU Utilisation <10%    Database not CPU constrained
-RDS Connections Active Connections  ~5  No connection exhaustion
-RDS Latency Read/Write Latency  <20ms   Latency remained healthy
-ECS CPU Utilisation at Failure  ~97%    ECS task became CPU saturated
-ECS Memory  Utilisation ~8% No memory pressure
-ALB Requests    Peak Request Count  ~18.8K  High concurrency sustained
-
-![ECS API Metrics](assets/ecs-dashboardpng.png)
-
-![RDS Metrics](assets/rds-cloudwatch.png)
-
-#### timestamp cross-reference  
-at current time 502 appeared marked it against the the cpu metrics which was at 95%, at this rate is where bottleneck appeared and latency was shown. 
-![ECS API Metrics CPU ](assets/ecs_cpu.png)
-
-
 
 ### ALB Access Log Findings
-ALB access log during timestap error occured, gives more insight than cloudwatch where I'm able to see whether where the root cause of botttleneck and narrows down the issue. this being the first step usually when diagnosing latency issue.
+The ALB access log was retrieved using the timestamp captured when the first 
+502 error appeared. ALB logs provide more detail than CloudWatch, it enables me to pinpoin 
+whether the failure stemed from the ALB or the ECS target. This is the first 
+step taken when diagnosing any latency or 502 errors.
 
 | Field | Value | Description |
 |-------|-------|-------------|
@@ -217,6 +202,28 @@ ALB access log during timestap error occured, gives more insight than cloudwatch
 | `target` | `10.0.4.164:8080` | Single ECS task became saturated |
 
 ![ALB Access Log](assets/accesslog.png)
+
+
+### Infrastructure Analysis
+
+| Component | Metric | Value | Verdict |
+|-----------|--------|-------|---------|
+| RDS | CPU Utilisation | < 10% | Database not CPU constrained |
+| RDS | Active Connections | ~5 | No connection exhaustion |
+| RDS | Read/Write Latency | < 20ms | Latency remained healthy |
+| ECS | CPU Utilisation at Failure | ~97% | ECS task became CPU saturated |
+| ECS | Memory Utilisation | ~8% | No memory pressure |
+| ALB | Peak Request Count | ~19.7K | High concurrency sustained |d
+
+##### ecs dashboard metrics 
+![ECS API Metrics](assets/ecs-dashboardpng.png)
+
+##### rds dashboard metrics 
+![RDS Metrics](assets/rds-cloudwatch.png)
+
+#### timestamp cross-reference  
+at current time 502 appeared marked it against the the cpu metrics which was at 95%, at this rate is where bottleneck appeared and latency was shown. 
+![ECS API Metrics CPU ](assets/ecs_cpu.png)
 
 
 ### Diagnosis
