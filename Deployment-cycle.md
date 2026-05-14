@@ -250,7 +250,9 @@ Autoscaling thresholds were configured using observed k6 behaviour rather than e
 | 80% CPU | ECS scale-out trigger | Increase capacity before saturation |
 | 85% CPU | Scale-in evaluation threshold | Prevent aggressive scaling oscillation |
 
-Autoscaling was only applied to the API service, enabling it to scale horizontally and handle high concurrency levels. The API service handles URL shortening, database interaction, request routing, and business logic execution. The worker and dashboard services maintained predictable traffic patterns and did not require scaling.
+
+The API service handles URL shortening, database interaction, request routing, 
+and business logic. therefore, applying autoscaling to only to the API service is valid. This is due to both worker and dashboard services maintains predictable traffic patterns which do not require scaling.
 
 ---
 
