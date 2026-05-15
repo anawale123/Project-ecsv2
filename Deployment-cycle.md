@@ -240,14 +240,15 @@ at current time 502 appeared marked it against the the cpu metrics which was at 
 
 Defined autoscaling threshold based on readings from k6 load test, which indicated that main reason for bottleneck appearing was do due to ecs cpu saturation. therefore, I adjusted ECS TargetTracking to set at level just before saturation occurs whilst giving enough headroom for new task run which ensures reliability accross the infrastructure. 
 
-| **[Threshold](ca://s?q=Explain_TargetTracking_setting)** | **[Action](ca://s?q=Autoscaling_action_explained)** | **[Reason](ca://s?q=Autoscaling_justification)** |
+| **[Threshold](ca://s?q=Explain_TargetTracking_setting)** | **[Action](ca://s?q=Autoscaling_action_explained)** | **[Justification](ca://s?q=Autoscaling_justification)** |
 | --- | --- | --- |
-| **[Min Capacity](ca://s?q=Why_min_capacity_2)** | Keep **2 tasks running** | Avoid single‑task CPU saturation |
-| **[Max Capacity](ca://s?q=Why_max_capacity_4)** | Scale up to **4 tasks** | Provide controlled headroom |
-| **[CPU Target](ca://s?q=Why_CPU_target_60)** | Hold **60% CPU** | Balanced responsiveness + cost |
-| **[Scale‑Out Cooldown](ca://s?q=Scale_out_cooldown_explained)** | **30s** delay | Allow rapid multi‑step scale‑outs |
-| **[Scale‑In Cooldown](ca://s?q=Scale_in_cooldown_explained)** | **120s** delay | Prevent scale‑in flapping |
-| **[Metric](ca://s?q=ECSServiceAverageCPUUtilization_explained)** | Use ECS CPU metric | Most accurate saturation signal |
+| **[Min Capacity](ca://s?q=Why_min_capacity_2)** | Maintain **2 running tasks** | Prevents single‑task CPU saturation |
+| **[Max Capacity](ca://s?q=Why_max_capacity_4)** | Scale up to **4 tasks** | Provides controlled headroom |
+| **[CPU Target](ca://s?q=Why_CPU_target_60)** | Maintain **60% CPU** | Balanced responsiveness and cost |
+| **[Scale‑Out Cooldown](ca://s?q=Scale_out_cooldown_explained)** | 30‑second delay | Allows rapid multi‑step scale‑outs |
+| **[Scale‑In Cooldown](ca://s?q=Scale_in_cooldown_explained)** | 120‑second delay | Prevents scale‑in flapping |
+| **[Metric](ca://s?q=ECSServiceAverageCPUUtilization_explained)** | ECS CPU utilisation | Most accurate saturation signal |
+
 The API service handles URL shortening, database interaction, request routing, 
 and business logic. therefore, applying autoscaling to only to the API service is valid. This is due to both worker and dashboard services maintains predictable traffic patterns which do not require scaling.
 
@@ -299,7 +300,7 @@ If CloudWatch alarms enter `ALARM` state or health checks fail during deployment
 
 ---
 
-## Key Engineering Decisions
+## Key Decisions
 
 ### OIDC Authentication for CI/CD
 
