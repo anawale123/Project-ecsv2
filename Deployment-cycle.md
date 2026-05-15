@@ -237,14 +237,17 @@ at current time 502 appeared marked it against the the cpu metrics which was at 
 
 ### Autoscaling Decisions
 
-Autoscaling thresholds were configured using observed k6 behaviour rather than estimates.
 
-| Threshold | Action | Justification |
-|-----------|--------|---------------|
-| 75% CPU | CloudWatch alarm trigger | Early warning before degradation |
-| 80% CPU | ECS scale-out trigger | Increase capacity before saturation |
-| 85% CPU | Scale-in evaluation threshold | Prevent aggressive scaling oscillation |
+Defined autoscaling threshold based on readings from k6 load test, which indicated that main reason for bottleneck appearing was do due to ecs cpu saturation. therefore, I set ECS TargetTracking would be set at level just before saturation occurs whilst giving enough time for new task run. 
 
+| **[Threshold](ca://s?q=Explain_TargetTracking_setting)** | **[Action](ca://s?q=Autoscaling_action_explained)** | **[Justification](ca://s?q=Autoscaling_justification)** |
+| --- | --- | --- |
+| **[Min Capacity](ca://s?q=Why_min_capacity_2)** | Maintain **2 running tasks** | Prevents single‑task CPU saturation and ensures stable scaling signals |
+| **[Max Capacity](ca://s?q=Why_max_capacity_4)** | Allow scaling **up to 4 tasks** | Provides headroom during peak load while keeping cost predictable |
+| **[CPU Target](ca://s?q=Why_CPU_target_60)** | Maintain **60% average CPU** | Balanced target that avoids premature scaling and prevents late scale‑outs |
+| **[Scale‑Out Cooldown](ca://s?q=Scale_out_cooldown_explained)** | Wait **30 seconds** before next scale‑out | Enables rapid consecutive scale‑outs during burst traffic |
+| **[Scale‑In Cooldown](ca://s?q=Scale_in_cooldown_explained)** | Wait **120 seconds** before scaling in | Prevents flapping and avoids removing tasks too quickly |
+| **[Metric](ca://s?q=ECSServiceAverageCPUUtilization_explained)** | Use **ECSServiceAverageCPUUtilization** | CPU is the most accurate indicator of saturation for this API workload |
 
 The API service handles URL shortening, database interaction, request routing, 
 and business logic. therefore, applying autoscaling to only to the API service is valid. This is due to both worker and dashboard services maintains predictable traffic patterns which do not require scaling.
