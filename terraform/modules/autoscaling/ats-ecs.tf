@@ -16,7 +16,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_warning" {
   namespace           = "AWS/ECS"
   period              = 60
   statistic           = "Average"
-  threshold           = 70
+  threshold           = 60
 
   dimensions = {
     ClusterName = var.cluster
@@ -37,7 +37,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   namespace           = "AWS/ECS"
   period              = 60
   statistic           = "Average"
-  threshold           = 75
+  threshold           = 65
 
   dimensions = {
     ClusterName = var.cluster
@@ -62,7 +62,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_low" {
   namespace           = "AWS/ECS"
   period              = 60
   statistic           = "Average"
-  threshold           = 33
+  threshold           = 40
 
   dimensions = {
     ClusterName = var.cluster
