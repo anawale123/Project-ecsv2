@@ -256,6 +256,32 @@ Visual representation of the cloud architecture — covers the hierarchy from us
 | RDS Backups | Automated backups retained for 7 days |
 | Autoscaling API | ECS service scales tasks based on CPU and demand |
 
+
+## KEY ARCHITECTURAL DECISIONS 
+
+in this section is where I outline Architectural Decisions taken and give trade offs based on the decisions made, to give an more accurate understadning as to why desicion where taken. 
+
+### ECS Fargate over EKS 
+
+Decided to implement ECS Fargate over EKS, this is due to the system being deployed doesn't require kubernetes level orchestration due to its simplicity. ECS fargate provides a severless container that is fully managed by AWS, removing the need to operate clusters, nodes, or control planes. Therefore, it reduces operational overhead and improves cost efficiency whilst giving full control over task definitions, networking, IAM roles, and scaling behaviour.
+
+Trade‑off: Less control over networking internals compared to EKS, but significantly simpler operations with lower maintenance burden, predictable scaling and cost effiecient.
+
+### ALB over APi Gateway 
+
+Decided to use an ALB instead of API Gateway because ALB routing integrates more naturally with ECS and provides straightforward control over listener rules and path‑based routing. It also delivers lower latency and more accurate behaviour under load testing, making it easier to validate performance and scaling characteristics.
+
+Trade‑off: API Gateway offers built‑in features like rate limiting and authentication, but ALB provides simpler routing, lower latency, and better alignment with ECS services.
+
+
+### PostgreSQL over DynamoDB
+The system functions as a URL shortener, so the database must support relational consistency, unique constraints, and transactional updates for the architecture to work correctly. the database chosen requires to implement short codes that always map to the correct long URL, with reads and writes that never conflict. Short codes must be unique, and all related writes (short code + long URL + metadata) must succeed together or fail together to avoid partial or missing entries. 
+
+PostgreSQL provides these guarantees through ACID transactions, unique constraints, and a relational model that also supports storing metadata such as clicks, timestamps, and IPs.
+
+Trade‑off: DynamoDB offers horizontal scaling and lower cost for high‑throughput key‑value workloads, but it lacks native joins, relational constraints, and multi‑row transactions. For this system’s consistency requirements and data model, PostgreSQL is the correct choice.
+
+
 ---
 
 ## Terraform Structure
