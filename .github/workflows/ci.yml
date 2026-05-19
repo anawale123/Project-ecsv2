@@ -33,10 +33,19 @@ jobs:
           aws ecr get-login-password --region $AWS_REGION \
           | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      #API IMAGE
+
+
+    
+      # API IMAGE
+      
       - name: Build api_image
         run: |
-          docker build --cache-from=type=gha --cache-to=type=gha,mode=max -f url-shortener/app/Dockerfile -t api_image:latest url-shortener/app/
+          docker build \
+            --cache-from=type=gha \
+            --cache-to=type=gha,mode=max \
+            -f url-shortener/app/Dockerfile \
+            -t api_image:latest \
+            url-shortener/app/
 
       - name: Scan api_image
         uses: aquasecurity/trivy-action@v0.20.0
@@ -58,23 +67,39 @@ jobs:
           fi
 
       - name: Push api_image
+        id: push_api
         run: |
           registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/api_image"
-          sha=$(git rev-parse --short HEAD)
-          primary_tag="${registry}:${sha}"
-          docker tag api_image:latest $primary_tag
-          docker push $primary_tag
-          current_branch=$(git rev-parse --abbrev-ref HEAD)
-          if [ "$current_branch" = "main" ]; then
-            latest_tag="${registry}:latest"
-            docker tag api_image:latest $latest_tag
-            docker push $latest_tag
-          fi
+          docker tag api_image:latest "${registry}:${GITHUB_REF_NAME}"
+          docker push "${registry}:${GITHUB_REF_NAME}"
+          docker tag api_image:latest "${registry}:latest"
+          docker push "${registry}:latest"
+          echo "image=${registry}:${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
 
-      #DASHBOARD IMAGE
+      - name: Render api task definition
+        id: render_api
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition-arn: arn:aws:ecs:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:task-definition/api_task_def
+          container-name: api
+          image: ${{ steps.push_api.outputs.image }}
+
+      - name: Register api task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render_api.outputs.task-definition }}
+
+      # DASHBOARD IMAGE
+      
       - name: Build dashboard_image
         run: |
-         docker build --cache-from=type=gha --cache-to=type=gha,mode=max -f url-shortener/services/dashboard/Dockerfile -t dashboard_image:latest url-shortener/services/dashboard/
+          docker build \
+            --cache-from=type=gha \
+            --cache-to=type=gha,mode=max \
+            -f url-shortener/services/dashboard/Dockerfile \
+            -t dashboard_image:latest \
+            url-shortener/services/dashboard/
+
       - name: Scan dashboard_image
         uses: aquasecurity/trivy-action@v0.20.0
         with:
@@ -95,23 +120,40 @@ jobs:
           fi
 
       - name: Push dashboard_image
+        id: push_dashboard
         run: |
           registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/dashboard_image"
-          sha=$(git rev-parse --short HEAD)
-          primary_tag="${registry}:${sha}"
-          docker tag dashboard_image:latest $primary_tag
-          docker push $primary_tag
-          current_branch=$(git rev-parse --abbrev-ref HEAD)
-          if [ "$current_branch" = "main" ]; then
-            latest_tag="${registry}:latest"
-            docker tag dashboard_image:latest $latest_tag
-            docker push $latest_tag
-          fi
+          docker tag dashboard_image:latest "${registry}:${GITHUB_REF_NAME}"
+          docker push "${registry}:${GITHUB_REF_NAME}"
+          docker tag dashboard_image:latest "${registry}:latest"
+          docker push "${registry}:latest"
+          echo "image=${registry}:${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
 
-      #WORKER IMAGE
+      - name: Render dashboard task definition
+        id: render_dashboard
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition-arn: arn:aws:ecs:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:task-definition/dashboard_task_def
+          container-name: dashboard
+          image: ${{ steps.push_dashboard.outputs.image }}
+
+      - name: Register dashboard task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render_dashboard.outputs.task-definition }}
+
+     
+      # WORKER IMAGE
+     
       - name: Build worker_image
         run: |
-          docker build --cache-from=type=gha --cache-to=type=gha,mode=max -f url-shortener/services/worker/Dockerfile -t worker_image:latest url-shortener/services/worker/
+          docker build \
+            --cache-from=type=gha \
+            --cache-to=type=gha,mode=max \
+            -f url-shortener/services/worker/Dockerfile \
+            -t worker_image:latest \
+            url-shortener/services/worker/
+
       - name: Scan worker_image
         uses: aquasecurity/trivy-action@v0.20.0
         with:
@@ -132,15 +174,24 @@ jobs:
           fi
 
       - name: Push worker_image
+        id: push_worker
         run: |
           registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/worker_image"
-          sha=$(git rev-parse --short HEAD)
-          primary_tag="${registry}:${sha}"
-          docker tag worker_image:latest $primary_tag
-          docker push $primary_tag
-          current_branch=$(git rev-parse --abbrev-ref HEAD)
-          if [ "$current_branch" = "main" ]; then
-            latest_tag="${registry}:latest"
-            docker tag worker_image:latest $latest_tag
-            docker push $latest_tag
-          fi
+          docker tag worker_image:latest "${registry}:${GITHUB_REF_NAME}"
+          docker push "${registry}:${GITHUB_REF_NAME}"
+          docker tag worker_image:latest "${registry}:latest"
+          docker push "${registry}:latest"
+          echo "image=${registry}:${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Render worker task definition
+        id: render_worker
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition-arn: arn:aws:ecs:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:task-definition/worker_task_def
+          container-name: worker
+          image: ${{ steps.push_worker.outputs.image }}
+
+      - name: Register worker task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render_worker.outputs.task-definition }}
