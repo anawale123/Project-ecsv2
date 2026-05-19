@@ -35,9 +35,8 @@ jobs:
 
 
 
-      # -----------------------------------------------------------------------
+     ----
       # API IMAGE
-      # -----------------------------------------------------------------------
       - name: Build api_image
         run: |
           docker build \
@@ -80,7 +79,7 @@ jobs:
         id: render_api
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: api_task_def
+          task-definition: api-service-ecs-prod
           container-name: api
           image: ${{ steps.push_api.outputs.image }}
 
@@ -134,7 +133,7 @@ jobs:
         id: render_dashboard
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: dashboard_task_def
+          task-definition: dashboard-service-ecs-prod
           container-name: dashboard
           image: ${{ steps.push_dashboard.outputs.image }}
 
@@ -143,9 +142,8 @@ jobs:
         with:
           task-definition: ${{ steps.render_dashboard.outputs.task-definition }}
 
-      # -----------------------------------------------------------------------
       # WORKER IMAGE
-      # -----------------------------------------------------------------------
+     
       - name: Build worker_image
         run: |
           docker build \
@@ -188,7 +186,7 @@ jobs:
         id: render_worker
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: worker_task_def
+          task-definition: worker_service_ecs_prod
           container-name: worker
           image: ${{ steps.push_worker.outputs.image }}
 
