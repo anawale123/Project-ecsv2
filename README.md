@@ -36,6 +36,9 @@ URL shortener operating live with DNS configured through Cloudflare and HTTPS en
 The project includes four GitHub Actions workflows, each responsible for a specific part of the delivery lifecycle.
 
 ### ci.yml — Build & Push
+
+![ci.yml](assets/ci-yml.png)]
+
 Build container images
 
 Security scan
@@ -45,6 +48,9 @@ Push to ECR
 Register new task definition
 
 ### iac.yml — Infrastructure Apply
+
+![iac-apply](assets/iac-tf.png)]
+
 terraform init (remote backend)
 
 terraform lint / testing tf files 
@@ -52,16 +58,22 @@ terraform lint / testing tf files
 terraform apply
 
 ### iac-destroy.yml — Safe Teardown
+
+![iac-destroy](assets/iac-destroy.png)]
+
 Two‑step confirmation
 
 Prevents accidental deletion of infrastructure
 
 ### codedeploy.yml — Blue/Green Deployment
+
+![codedeploy live](assets/cd-yml.png)]
+
 Triggers CodeDeploy for API and Dashboard
 
 Executes zero‑downtime blue/green rollout
 
 Automated rollback on failed health checks
- 
+ ![codedeploy live](assets/codedeploy.png)]
 
 All credentials are stored in AWS Secrets Manager and AWS configuration is done through AWS OIDC. No hard coded credentials or key phreaes.
