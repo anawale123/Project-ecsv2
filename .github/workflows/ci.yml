@@ -35,9 +35,9 @@ jobs:
 
 
 
-    
+      # -----------------------------------------------------------------------
       # API IMAGE
-      
+      # -----------------------------------------------------------------------
       - name: Build api_image
         run: |
           docker build \
@@ -80,7 +80,7 @@ jobs:
         id: render_api
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition-arn: arn:aws:ecs:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:task-definition/api_task_def
+          task-definition: api_task_def
           container-name: api
           image: ${{ steps.push_api.outputs.image }}
 
@@ -89,8 +89,9 @@ jobs:
         with:
           task-definition: ${{ steps.render_api.outputs.task-definition }}
 
+      # -----------------------------------------------------------------------
       # DASHBOARD IMAGE
-      
+      # -----------------------------------------------------------------------
       - name: Build dashboard_image
         run: |
           docker build \
@@ -133,7 +134,7 @@ jobs:
         id: render_dashboard
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition-arn: arn:aws:ecs:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:task-definition/dashboard_task_def
+          task-definition: dashboard_task_def
           container-name: dashboard
           image: ${{ steps.push_dashboard.outputs.image }}
 
@@ -142,9 +143,9 @@ jobs:
         with:
           task-definition: ${{ steps.render_dashboard.outputs.task-definition }}
 
-     
+      # -----------------------------------------------------------------------
       # WORKER IMAGE
-     
+      # -----------------------------------------------------------------------
       - name: Build worker_image
         run: |
           docker build \
@@ -187,7 +188,7 @@ jobs:
         id: render_worker
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition-arn: arn:aws:ecs:${{ env.AWS_REGION }}:${{ env.AWS_ACCOUNT_ID }}:task-definition/worker_task_def
+          task-definition: worker_task_def
           container-name: worker
           image: ${{ steps.push_worker.outputs.image }}
 
