@@ -206,7 +206,7 @@ jobs:
         id: render_worker
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: worker-task-def.json
+          task-definition: worker_task-def.json
           container-name: worker
           image: ${{ steps.push_worker.outputs.image }}
 
