@@ -2,10 +2,6 @@ name: Automating image push to AWS ECR with OIDC
 
 on:
   workflow_dispatch:
-    inputs:
-      image_tag:
-        description: 'Image tag to build and push (e.g. v1.0.0)'
-        required: true
 
 jobs:
   build-and-publish:
@@ -72,7 +68,7 @@ jobs:
         id: push_api
         run: |
           registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/api_image"
-          image_tag="${{ github.event.inputs.image_tag }}"
+          image_tag=$(git rev-parse --short HEAD)
           docker tag api_image:latest "${registry}:${image_tag}"
           docker push "${registry}:${image_tag}"
           docker tag api_image:latest "${registry}:latest"
@@ -132,7 +128,7 @@ jobs:
         id: push_dashboard
         run: |
           registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/dashboard_image"
-          image_tag="${{ github.event.inputs.image_tag }}"
+          image_tag=$(git rev-parse --short HEAD)
           docker tag dashboard_image:latest "${registry}:${image_tag}"
           docker push "${registry}:${image_tag}"
           docker tag dashboard_image:latest "${registry}:latest"
@@ -192,7 +188,7 @@ jobs:
         id: push_worker
         run: |
           registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/worker_image"
-          image_tag="${{ github.event.inputs.image_tag }}"
+          image_tag=$(git rev-parse --short HEAD)
           docker tag worker_image:latest "${registry}:${image_tag}"
           docker push "${registry}:${image_tag}"
           docker tag worker_image:latest "${registry}:latest"
