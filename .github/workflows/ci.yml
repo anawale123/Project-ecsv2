@@ -78,7 +78,7 @@ jobs:
         id: render_api
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: arn:aws:ecs:eu-west-2:703844615264:task-definition/api-service-ecs-prod
+          task-definition: arn:aws:ecs:eu-west-2:703844615264:task-definition/api-service-ecs-production:4
           container-name: api
           image: ${{ steps.push_api.outputs.image }}
 
@@ -132,7 +132,7 @@ jobs:
         id: render_dashboard
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: arn:aws:ecs:eu-west-2:703844615264:task-definition/dashboard-service-ecs-prod
+          task-definition: arn:aws:ecs:eu-west-2:703844615264:task-definition/dashboard-service-ecs-production:4
           container-name: dashboard
           image: ${{ steps.push_dashboard.outputs.image }}
 
@@ -185,7 +185,7 @@ jobs:
         id: render_worker
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: arn:aws:ecs:eu-west-2:703844615264:task-definition/worker_service_ecs-prod
+          task-definition: arn:aws:ecs:eu-west-2:703844615264:task-definition/worker_service_ecs-production:4
           container-name: worker
           image: ${{ steps.push_worker.outputs.image }}
 
