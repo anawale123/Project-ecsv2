@@ -198,7 +198,7 @@ jobs:
       - name: Fetch worker task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition worker-service-ecs-production \
+            --task-definition worker-service_ecs_production \
             --query taskDefinition \
             > worker-task-def.json
 
