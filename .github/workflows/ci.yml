@@ -2,6 +2,10 @@ name: Automating image push to AWS ECR with OIDC
 
 on:
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to build and push (e.g. v1.0.0)'
+        required: true
 
 jobs:
   build-and-publish:
@@ -35,7 +39,7 @@ jobs:
 
 
 
-      # API IMAGE
+
       - name: Build api_image
         run: |
           docker build \
@@ -68,17 +72,25 @@ jobs:
         id: push_api
         run: |
           registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/api_image"
-          docker tag api_image:latest "${registry}:${GITHUB_REF_NAME}"
-          docker push "${registry}:${GITHUB_REF_NAME}"
+          image_tag="${{ github.event.inputs.image_tag }}"
+          docker tag api_image:latest "${registry}:${image_tag}"
+          docker push "${registry}:${image_tag}"
           docker tag api_image:latest "${registry}:latest"
           docker push "${registry}:latest"
-          echo "image=${registry}:${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          echo "image=${registry}:${image_tag}" >> $GITHUB_OUTPUT
+
+      - name: Fetch api task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition api-service-ecs-production \
+            --query taskDefinition \
+            > api-task-def.json
 
       - name: Render api task definition
         id: render_api
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: arn:aws:ecs:eu-west-2:703844615264:task-definition/api-service-ecs-production
+          task-definition: api-task-def.json
           container-name: api
           image: ${{ steps.push_api.outputs.image }}
 
@@ -87,9 +99,7 @@ jobs:
         with:
           task-definition: ${{ steps.render_api.outputs.task-definition }}
 
-      # -----------------------------------------------------------------------
-      # DASHBOARD IMAGE
-      # -----------------------------------------------------------------------
+
       - name: Build dashboard_image
         run: |
           docker build \
@@ -122,17 +132,25 @@ jobs:
         id: push_dashboard
         run: |
           registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/dashboard_image"
-          docker tag dashboard_image:latest "${registry}:${GITHUB_REF_NAME}"
-          docker push "${registry}:${GITHUB_REF_NAME}"
+          image_tag="${{ github.event.inputs.image_tag }}"
+          docker tag dashboard_image:latest "${registry}:${image_tag}"
+          docker push "${registry}:${image_tag}"
           docker tag dashboard_image:latest "${registry}:latest"
           docker push "${registry}:latest"
-          echo "image=${registry}:${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          echo "image=${registry}:${image_tag}" >> $GITHUB_OUTPUT
+
+      - name: Fetch dashboard task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition dashboard-service-ecs-production \
+            --query taskDefinition \
+            > dashboard-task-def.json
 
       - name: Render dashboard task definition
         id: render_dashboard
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: arn:aws:ecs:eu-west-2:703844615264:task-definition/dashboard-service-ecs-production
+          task-definition: dashboard-task-def.json
           container-name: dashboard
           image: ${{ steps.push_dashboard.outputs.image }}
 
@@ -141,8 +159,7 @@ jobs:
         with:
           task-definition: ${{ steps.render_dashboard.outputs.task-definition }}
 
-      # WORKER IMAGE
-     
+
       - name: Build worker_image
         run: |
           docker build \
@@ -175,17 +192,25 @@ jobs:
         id: push_worker
         run: |
           registry="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/worker_image"
-          docker tag worker_image:latest "${registry}:${GITHUB_REF_NAME}"
-          docker push "${registry}:${GITHUB_REF_NAME}"
+          image_tag="${{ github.event.inputs.image_tag }}"
+          docker tag worker_image:latest "${registry}:${image_tag}"
+          docker push "${registry}:${image_tag}"
           docker tag worker_image:latest "${registry}:latest"
           docker push "${registry}:latest"
-          echo "image=${registry}:${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          echo "image=${registry}:${image_tag}" >> $GITHUB_OUTPUT
+
+      - name: Fetch worker task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition worker-service-ecs-production \
+            --query taskDefinition \
+            > worker-task-def.json
 
       - name: Render worker task definition
         id: render_worker
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: arn:aws:ecs:eu-west-2:703844615264:task-definition/worker_service_ecs-production
+          task-definition: worker-task-def.json
           container-name: worker
           image: ${{ steps.push_worker.outputs.image }}
 
