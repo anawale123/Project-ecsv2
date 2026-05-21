@@ -37,7 +37,7 @@ The project includes four GitHub Actions workflows, each responsible for a speci
 
 ### ci.yml — Build & Push
 
-[ci.yml](assets/ci_yml.png)
+[[ci.yml](assets/ci_yml.png)]
 
 Build container images
 
