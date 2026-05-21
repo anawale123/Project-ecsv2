@@ -33,9 +33,6 @@ jobs:
           aws ecr get-login-password --region $AWS_REGION \
           | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-
-
-
       - name: Build api_image
         run: |
           docker build \
@@ -94,7 +91,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render_api.outputs.task-definition }}
-
 
       - name: Build dashboard_image
         run: |
@@ -155,7 +151,6 @@ jobs:
         with:
           task-definition: ${{ steps.render_dashboard.outputs.task-definition }}
 
-
       - name: Build worker_image
         run: |
           docker build \
@@ -198,7 +193,7 @@ jobs:
       - name: Fetch worker task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition worker_service_ecs_production \
+            --task-definition worker_service_ecs-production \
             --query taskDefinition \
             > worker-task-def.json
 
@@ -206,7 +201,7 @@ jobs:
         id: render_worker
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: worker_task-def.json
+          task-definition: worker-task-def.json
           container-name: worker
           image: ${{ steps.push_worker.outputs.image }}
 
