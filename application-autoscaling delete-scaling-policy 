@@ -1,0 +1,58 @@
+{
+    "ScalingPolicies": [
+        {
+            "PolicyARN": "arn:aws:autoscaling:eu-west-2:703844615264:scalingPolicy:438a9137-dfb8-4c29-8dd9-f32f78f78a93:resource/ecs/service/cluster-app-production/api-ecs-service-production:policyName/api-cpu-scale-out-production",
+            "PolicyName": "api-cpu-scale-out-production",
+            "ServiceNamespace": "ecs",
+            "ResourceId": "service/cluster-app-production/api-ecs-service-production",
+            "ScalableDimension": "ecs:service:DesiredCount",
+            "PolicyType": "TargetTrackingScaling",
+            "TargetTrackingScalingPolicyConfiguration": {
+                "TargetValue": 30.0,
+                "PredefinedMetricSpecification": {
+                    "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
+                },
+                "ScaleOutCooldown": 30,
+                "ScaleInCooldown": 120,
+                "DisableScaleIn": false
+            },
+            "Alarms": [
+                {
+                    "AlarmName": "TargetTracking-service/cluster-app-production/api-ecs-service-production-AlarmHigh-a1942600-8dd1-46d5-91e5-ec17b1c2c7e2",
+                    "AlarmARN": "arn:aws:cloudwatch:eu-west-2:703844615264:alarm:TargetTracking-service/cluster-app-production/api-ecs-service-production-AlarmHigh-a1942600-8dd1-46d5-91e5-ec17b1c2c7e2"
+                },
+                {
+                    "AlarmName": "TargetTracking-service/cluster-app-production/api-ecs-service-production-AlarmLow-e98b2057-ebe5-4d30-81bc-30b841662f57",
+                    "AlarmARN": "arn:aws:cloudwatch:eu-west-2:703844615264:alarm:TargetTracking-service/cluster-app-production/api-ecs-service-production-AlarmLow-e98b2057-ebe5-4d30-81bc-30b841662f57"
+                }
+            ],
+            "CreationTime": "2026-05-13T17:19:32.609000+01:00"
+        },
+        {
+            "PolicyARN": "arn:aws:autoscaling:eu-west-2:703844615264:scalingPolicy:438a9137-dfb8-4c29-8dd9-f32f78f78a93:resource/ecs/service/cluster-app-production/api-ecs-service-production:policyName/api-cpu-scale-in-production",
+            "PolicyName": "api-cpu-scale-in-production",
+            "ServiceNamespace": "ecs",
+            "ResourceId": "service/cluster-app-production/api-ecs-service-production",
+            "ScalableDimension": "ecs:service:DesiredCount",
+            "PolicyType": "StepScaling",
+            "StepScalingPolicyConfiguration": {
+                "AdjustmentType": "ChangeInCapacity",
+                "StepAdjustments": [
+                    {
+                        "MetricIntervalUpperBound": 0.0,
+                        "ScalingAdjustment": -1
+                    }
+                ],
+                "Cooldown": 180,
+                "MetricAggregationType": "Average"
+            },
+            "Alarms": [
+                {
+                    "AlarmName": "api-cpu-low-production",
+                    "AlarmARN": "arn:aws:cloudwatch:eu-west-2:703844615264:alarm:api-cpu-low-production"
+                }
+            ],
+            "CreationTime": "2026-05-13T17:19:32.951000+01:00"
+        }
+    ]
+}

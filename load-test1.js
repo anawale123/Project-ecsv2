@@ -10,16 +10,16 @@ const statsDuration   = new Trend('stats_duration', true);
 
 export const options = {
   stages: [
-    { duration: '1m', target: 200 },
-    { duration: '1m', target: 300 },
-    { duration: '1m', target: 400 },  // ← watch this stage closely
-    { duration: '1m', target: 500 },
+    { duration: '3m', target: 400 },
     { duration: '1m', target: 600 },
-    { duration: '1m', target: 700 },
-    { duration: '1m', target: 800 },
+    { duration: '3m', target: 800 },  
+    { duration: '3m', target:  1000 },
+    { duration: '3m', target: 1200 },
+    { duration: '4m', target: 900 },
+    { duration: '4m', target: 800 },
   ],
   thresholds: {
-    // Realistic thresholds based on your last run — tighten after fixing uvicorn
+    
     'http_req_duration':  ['p(95)<2000'],
     'http_req_failed':    ['rate<0.01'],
     'shorten_fail_rate':  ['rate<0.01'],
