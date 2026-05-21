@@ -24,8 +24,8 @@ The system functions as a URL shortener and consists of three services that run 
 
 | Document | Covers |
 |----------|--------|
-| [Deployment Lifecycle](/Deployment-lifecycle.md) | Four-phase delivery process — local, dev, staging, and production, including CI/CD pipeline configuration, k6 load test findings, and key infrastructure decisions |
-| [Architecture README](/architecture.md) | Full infrastructure reference covering networking, compute, data, autoscaling, blue/green deployment, observability, security, cost decisions, and Terraform module structure |
+| [Deployment Lifecycle](Deployment-lifecycle.md) | Four-phase delivery process — local, dev, staging, and production, including CI/CD pipeline configuration, k6 load test findings, and key infrastructure decisions |
+| [Architecture README](architecture.md) | Full infrastructure reference covering networking, compute, data, autoscaling, blue/green deployment, observability, security, cost decisions, and Terraform module structure |
 
 ---
 
