@@ -2,7 +2,8 @@
 
 **Python · Go · Docker · Terraform · AWS ECS Fargate · ALB · RDS (PostgreSQL) · ElastiCache (Redis) · SQS · Secrets Manager · KMS · WAF · CodeDeploy · CloudWatch · k6 · GitHub Actions · Cloudflare**
 
-End-to-end deployment of a distributed system deployed onto AWS Cloud. The project covers the full delivery lifecycle, from local Docker Compose through to a zero-downtime production deployment with automated rollback and centralised observability, provisioned entirely through Terraform and deployed via an automated CI/CD pipeline.
+
+End-to-end depeloyment of a distributed system deployed onto AWS Cloud. The project covers the full delivery lifecycle, from local Docker Compose through to a zero-downtime production deployment with automated rollback and centralised observability, provisioned entirely through Terraform and deployed via an automated CI/CD pipeline.
 
 ---
 
