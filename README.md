@@ -2,13 +2,15 @@
 
 **Python · Go · Docker · Terraform · AWS ECS Fargate · ALB · RDS (PostgreSQL) · ElastiCache (Redis) · SQS · Secrets Manager · KMS · WAF · CodeDeploy · CloudWatch · k6 · GitHub Actions · Cloudflare**
 
+---
 
-End-to-end depeloyment of a distributed system onto AWS Cloud infrastructure. The project covers the full delivery lifecycle, from local Docker Compose through to a zero-downtime production deployment with automated rollback and centralised observability, provisioned entirely through Terraform and deployed via an automated CI/CD pipeline.
+End-to-end deployment of a distributed system onto AWS Cloud infrastructure.
 
+The project covers the full delivery lifecycle, from local Docker Compose through to a zero-downtime production deployment with automated rollback and centralised observability, provisioned entirely through Terraform and deployed via an automated CI/CD pipeline.
 
 ---
 
-## Services
+# Services
 
 The system functions as a URL shortener and consists of three services that run independently while sharing the same ECS Fargate cluster and PostgreSQL database.
 
@@ -20,7 +22,7 @@ The system functions as a URL shortener and consists of three services that run 
 
 ---
 
-## Documentation
+# Documentation
 
 | Document | Covers |
 |----------|--------|
@@ -29,7 +31,7 @@ The system functions as a URL shortener and consists of three services that run 
 
 ---
 
-## Live Demo
+# Live Demo
 
 URL shortener operating live with DNS configured through Cloudflare and HTTPS enabled via ACM for secure end-to-end network traffic.
 
@@ -38,13 +40,16 @@ URL shortener operating live with DNS configured through Cloudflare and HTTPS en
     <img src="https://img.youtube.com/vi/RRVz9IVuu_s/mqdefault.jpg" alt="Demo">
   </a>
 </div>
+
 ---
 
-## CI/CD Pipeline
+# CI/CD Pipeline
 
 The project includes four GitHub Actions workflows, each responsible for a specific part of the delivery lifecycle.
 
-### ci.yml — Build & Push
+---
+
+## ci.yml — Build & Push
 
 ![ci](assets/ci_yml.png)
 
@@ -53,7 +58,9 @@ The project includes four GitHub Actions workflows, each responsible for a speci
 - Push to ECR
 - Register new task definition
 
-### iac.yml — Infrastructure Apply
+---
+
+## iac.yml — Infrastructure Apply
 
 ![iac-apply](assets/iac-tf.png)
 
@@ -61,14 +68,18 @@ The project includes four GitHub Actions workflows, each responsible for a speci
 - Terraform lint and file validation
 - `terraform apply`
 
-### iac-destroy.yml — Safe Teardown
+---
+
+## iac-destroy.yml — Safe Teardown
 
 ![iac-destroy](assets/iac-destroy.png)
 
 - Two-step confirmation
 - Prevents accidental deletion of infrastructure
 
-### codedeploy.yml — Blue/Green Deployment
+---
+
+## codedeploy.yml — Blue/Green Deployment
 
 ![codedeploy](assets/cd-yml.png)
 
