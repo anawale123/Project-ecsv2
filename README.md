@@ -32,6 +32,7 @@ The system functions as a URL shortener and consists of three services that run 
 ## Live Demo
 
 URL shortener operating live with DNS configured through Cloudflare and HTTPS enabled via ACM for secure end-to-end network traffic.
+[![Demo](https://img.youtube.com/vi/hDqHLSWlQEs/maxresdefault.jpg)](https://youtu.be/hDqHLSWlQEs)
 
 ---
 
