@@ -25,7 +25,7 @@ Multi-service infrastructure on AWS, full architecture design and resource docum
 
 ## Architecture Diagram
 
-![Architecture Diagram](assets/ecs2.jpg)
+![Architecture Diagram](assets/ecs2.drawio.png)
 
 Visual representation of the cloud architecture — covers the hierarchy from user endpoint to application, capturing the dynamic design of how the system operates.
 
