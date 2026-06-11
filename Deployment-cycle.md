@@ -8,7 +8,7 @@
 
 The deployment lifecycle progresses through four iterative phases in a structured environment: local, development, staging, and production.
 
-Each phase incrementally introduces additional infrastructure that enhances security, observability, and deployment reliability. The objective is to validate the platform progressively at each phase rather than deploying the full production architecture at once.
+Each phase incrementally introduces additional resources that enhances security, observability, and deployment reliability. The objective is to validate the platform progressively at each phase rather than deploying the full production architecture at once.
 
 | Phase | Environment | Objective |
 |-------|-------------|-----------|
@@ -23,7 +23,10 @@ Each phase incrementally introduces additional infrastructure that enhances secu
 
 ### Goal
 
-The initial phase focuses on running the application locally using Docker Compose in order to validate:
+The initial phase has three stages. 
+Begins with containerising the application source code with Docker. Secondly, using Docker Compose to validate and test local set up between all 3 services. lastly, shipping the image onto AWS ECR. 
+
+Benefits of the first to stages in Phase 0, with Docker compose and Docker:
 
 - Understanding how services communicate
 - Internal networking
@@ -31,11 +34,11 @@ The initial phase focuses on running the application locally using Docker Compos
 - Runtime dependencies
 - Container startup behaviour
 
-The significance of Docker Compose is that it establishes a blueprint for the AWS infrastructure before provisioning cloud resources. Networking decisions such as subnet design, security group rules, and ALB routing were derived directly from the Docker Compose architecture.
-
 ### Containerisation
 
 The platform consists of three services written across two languages. Each service uses a multi-stage Docker build process to reduce image size, isolate build dependencies, and improve runtime security.
+
+I've decided to use different Runtime images Alpine, Distroless. Reasoning being, wanted to showcase the ability that I'm capable of using both runtimes when neccessary.
 
 | Service | Language | Runtime Image | Reason |
 |---------|----------|---------------|--------|
@@ -60,6 +63,7 @@ The platform consists of three services written across two languages. Each servi
 | Stage 3 — Runtime | Create non-root user · Copy compiled binary from builder stage · Start application binary |
 
 ### Container Security
+Container security steps below taken accords to each docker file.
 
 All runtime containers:
 
@@ -68,8 +72,14 @@ All runtime containers:
 - Include ECS-compatible structured logging
 - Minimise attack surface through multi-stage builds
 
-### CI Pipeline
+### Docker Compose Benefits 
 
+The significance of Docker Compose is that it establishes a blueprint for the AWS infrastructure before provisioning cloud resources. Networking decisions such as subnet design, security group rules, and ALB routing were derived directly from the Docker Compose architecture.
+
+
+
+### CI Pipeline
+Last stage, built automation to push image securely onto AWS ECR.
 ```
 GitHub Actions
    ↓
@@ -92,7 +102,7 @@ AWS authentication uses GitHub OIDC federation. No long-lived AWS credentials ar
 
 ### Goal
 
-The development environment acts as an infrastructure smoke test. The focus lies on getting the application running on real AWS infrastructure with minimal resources, making it easier in later phases when introducing additional resources for security and observability.
+The Dev environment acts as an infrastructure smoke test. The focus lies on getting the application running on real AWS infrastructure with minimal resources, making it easier in later phases when introducing additional resources for security and observability.
 
 The objective is to verify:
 
@@ -106,7 +116,7 @@ The objective is to verify:
 
 | Module | Resources |
 |--------|-----------|
-| Networking | VPC, public/private subnets, route tables, NAT gateway, security groups, VPC endpoints |
+| Networking | VPC, public/private subnets, route tables, VPC Endpoints, security groups, VPC endpoints |
 | IAM | ECS task execution roles and task roles |
 | CloudWatch | ECS log groups |
 | SQS | Queue and dead-letter queue |
@@ -117,7 +127,7 @@ The objective is to verify:
 
 ### Validation Criteria
 
-The development phase is considered complete when:
+The development phase is acknowledged as completed when:
 
 - All ECS services reach `RUNNING`
 - ALB health checks pass successfully
@@ -187,10 +197,10 @@ This timestamp was used to:
 
 
 ### ALB Access Log Findings
+
 The ALB access log was retrieved using the timestamp captured when the first 
-502 error appeared. ALB logs provide more detail than CloudWatch, it enables me to pinpoin 
-whether the failure stemed from the ALB or the ECS target. This is the first 
-step taken when diagnosing any latency or 502 errors.
+502 error appeared. ALB logs provide more detail than CloudWatch, it enables me to pinpoint and shows 
+whether the failure came from the ALB or the ECS target. This is usually,  the first step taken when diagnosing any latency or 502 errors.
 
 | status | Value | Description |
 |-------|-------|-------------|
