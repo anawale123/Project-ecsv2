@@ -16,7 +16,6 @@ Multi-service infrastructure on AWS, full architecture design and resource docum
 - Observability
 - Security
 - Reliability
-- Cost optimisation
 - Terraform structure
 
 97 resources are provisioned in Terraform to bring a highly available, reliable, and secure infrastructure that aligns with modern standard ECS Fargate deployment. This README serves as a reference for all resources deployed onto AWS.
