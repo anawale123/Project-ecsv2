@@ -1,4 +1,4 @@
-# ECS v2 — Production AWS Infrastructure
+# URL Shortener — Production AWS Infrastructure
 
 **Python · Go · Docker · Terraform · AWS ECS Fargate · ALB · RDS (PostgreSQL) · ElastiCache (Redis) · SQS · Secrets Manager · KMS · WAF · CodeDeploy · CloudWatch · k6 · GitHub Actions · Cloudflare**
 
