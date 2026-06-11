@@ -26,7 +26,7 @@ Each phase incrementally introduces additional resources that enhances security,
 The initial phase has three stages. 
 Begins with containerising the application source code with Docker. Secondly, using Docker Compose to validate and test local set up between all 3 services. lastly, shipping the image onto AWS ECR. 
 
-Benefits of the first to stages in Phase 0, with Docker compose and Docker:
+Benefits of the first two stages in Phase 0, with Docker compose and Docker:
 
 - Understanding how services communicate
 - Internal networking
